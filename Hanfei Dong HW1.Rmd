@@ -1,0 +1,101 @@
+---
+title: "HW1"
+author: "Hanfei Dong"
+date: "2024-02-01"
+output: html_document
+---
+# With Some Data
+``` {r}
+load("BRFSS2022_rev.RData")
+brfss22[1:10,1:6]
+```
+
+``` {r}
+attach(brfss22)
+```
+
+``` {r}
+summary(brfss22)
+```
+
+### Simple Stats
+```{r}
+summary(SLEPTIM1[X_STATE == "New York"])
+summary(SLEPTIM1[X_STATE == "Ohio"])
+```
+
+```{r}
+mean(SLEPTIM1[X_STATE == "New York"], na.rm = TRUE)
+sd(SLEPTIM1[X_STATE == "New York"], na.rm = TRUE)
+mean(SLEPTIM1[X_STATE == "Ohio"], na.rm = TRUE)
+sd(SLEPTIM1[X_STATE == "Ohio"], na.rm = TRUE)
+```
+
+## Variable Coding
+```{r}
+hist(SLEPTIM1[(SLEPTIM1 >5) & (SLEPTIM1 < 9)])
+```
+
+```{r}
+summary(SEXVAR)
+summary(BIRTHSEX)
+```
+
+```{r}
+summary(GENHLTH)
+```
+
+```{r}
+summary(EDUCA)
+```
+
+### Packages
+```
+install.packages("tidyverse")
+install.packages("plyr")
+```
+
+```{r warning=FALSE, message=FALSE}
+
+library(plyr)
+library(tidyverse)
+
+```
+
+
+### Factors
+```{r}
+summary(X_AGEG5YR)
+summary(INCOME3)
+```
+
+```{r}
+table(GENHLTH,SEXVAR)
+xtabs(~GENHLTH + SEXVAR)
+```
+
+```{r}
+prop.table(table(GENHLTH,SEXVAR))
+```
+
+#### Alt Versions
+```{r message=FALSE}
+mean(SLEPTIM1[(EDUCA == "College 4 years or more (College graduate)")], na.rm = TRUE)
+
+# alternatively
+restrict1 <- as.logical(EDUCA == "College 4 years or more (College graduate)")
+dat_subset1 <- subset(brfss22, restrict1)
+
+detach()
+attach(dat_subset1)
+
+mean(SLEPTIM1, na.rm = TRUE)
+
+detach()
+
+
+```
+
+```{r message=FALSE}
+mean(brfss22$SLEPTIM1, na.rm = TRUE)
+mean(dat_subset1$SLEPTIM1, na.rm = TRUE)
