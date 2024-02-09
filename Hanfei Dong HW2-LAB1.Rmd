@@ -1,0 +1,52 @@
+---
+title: "hw2"
+author: "Hanfei Dong"
+date: "2024-02-08"
+output: html_document
+---
+
+```{r warning=FALSE, message=FALSE}
+
+library(tidyverse)
+library(ggplot2)
+
+```
+
+``` {r}
+xtabs(~ brfss22$ADDEPEV3 + brfss22$SEXVAR)
+```
+
+``` {r}
+prop.table(table(brfss22$ADDEPEV3, brfss22$SEXVAR))
+```
+
+``` {r}
+NN <- length(brfss22$ADDEPEV3)
+set.seed(12345)
+restrict_1 <- (runif(NN) < 0.1)
+summary(restrict_1)
+```
+
+``` {r}
+brfss_small <- subset(brfss22, restrict_1)
+```
+
+``` {r}
+ggplot(brfss_small, aes(x = EDUCA, fill = ADDEPEV3)) + geom_bar(position = "fill") + scale_fill_viridis_d()
+```
+
+``` {r}
+ggplot(brfss_small, aes(x = ADDEPEV3, fill = EDUCA)) + geom_bar()
+```
+
+
+``` {r}
+ggplot(brfss_small, aes(x = X_AGEG5YR, fill = ADDEPEV3)) + geom_bar(position = "fill") + scale_fill_viridis_d()
+```
+
+``` {r}
+ggplot(brfss_small, aes(x = ADDEPEV3, fill = X_AGEG5YR)) + geom_bar()
+```
+
+The data here on the age of depressed people as well as their education is interesting, and I've visualized it as a ratio to make it easier to see.
+However, since the population base for each age group as well as education is inherently uncontrolled in brfss_small's sample, more rigorous experiments using this raw data or other studies will have to be consulted if one wants to study the correlation between age, education and depression.
