@@ -1,0 +1,49 @@
+---
+title: "dice"
+author: "Hanfei Dong"
+date: "2024-02-08"
+output: html_document
+---
+```{r}
+how_many_rolls <- 20
+sim_rolls <- sample(1:6, how_many_rolls, replace = TRUE)
+```
+
+```{r}
+# for first time
+lots_of_sim_rolls <- sample(1:6,how_many_rolls, replace = TRUE)
+
+# do 49 more simulations
+for (indx in 1:49) {
+  sim_rolls <- sample(1:6,how_many_rolls, replace = TRUE)
+  lots_of_sim_rolls <- data.frame(lots_of_sim_rolls,sim_rolls)
+  }
+```
+
+```{r}
+how_many_sims <- 50
+sim_rolls_vec <- sample(1:6,(how_many_rolls*how_many_sims), replace = TRUE) # vectorized version
+```
+
+```{r}
+if_come_up_5 <- as.numeric(lots_of_sim_rolls == 5)
+mean(if_come_up_5)
+
+if_come_up_5_vec <- as.numeric(sim_rolls_vec == 5)
+mean(if_come_up_5_vec)
+
+```
+
+Possible Protocols Analysis
+
+PP1: Single Throw
+False Positive (Type I error): if the die is fair, the theoretical probability of each number appearing is 1/6. Thus, the false positive probability, i.e., that the die is fair but judged unfair (a 5 is thrown), is 1/6.
+False negative (Type II error): the probability that the dice will be incorrectly judged as fair if a 5 is not thrown when the dice are not fair. In my records, the probability that the dice favored a 5 is 40%, so the probability of not throwing a 6 is 60%
+
+PP2: 20 throws
+False Positive (Type I error)：Regarding the threshold, I set the significance level α = 0.05, i.e., even if the dice is fair, we have a 5% chance of incorrectly judging it as unfair.
+False Positive (Type I error)：
+Fair dice expectation: out of 20 throws, expect to get a 5  20 x 61 ≈ 3.33 times.
+Unfair dice expectation: out of 20 throws, expect to get a 5  20 x 0.40 = 8 times.
+Regarding thresholds, I set the dice to be considered fair if the number of 5's obtained in 20 throws is within 3.33 ± 2.
+In this way, the probability of a false negative is about 0.365, which means that if the die is actually unfair (the number 5 has a 40% probability of coming up), we have about a 36.5% probability of incorrectly judging it as fair.
