@@ -1,0 +1,145 @@
+---
+title: "Exam 1"
+author: "Hanfei Dong"
+date: "2024-03-14"
+output: html_document
+---
+``` {r}
+load("D:/psy StatMethod/BRFSS2022_rev.RData")
+``` 
+
+```{r eval=FALSE}
+ xtabs(~ use_marijan + Age_midpt)
+                         Age_midpt
+use_marijan   21   27   32   37   42   47   52   57   62   67   72   77   82
+          0 3737 3117 3675 4530 5069 4949 6273 6960 8520 9699 9275 7154 7963
+          1 1311  990 1098 1050 1073  828  820  936 1111 1066  758  311  105
+```
+H0: p27=p57
+Ha: p27≠p57
+p27 and p57 represent the rate of cannabis use in the 27- and 57-year-old age groups, respectively. The null hypothesis is that there is no difference in the rate of cannabis use between the two age groups, while the alternative hypothesis is that there is a difference.
+
+``` {r}
+users = c(990, 936) 
+totals = c(3117 + 990, 6960 + 936) 
+```
+
+``` {r}
+result = prop.test(users, totals)
+print(result)
+```
+
+``` {r}
+estimated_prop_diff = diff(users / totals)
+std_error = sqrt(sum((users / totals) * (1 - users / totals) / totals))
+print(paste("Estimated proportion difference:", estimated_prop_diff))
+print(paste("Standard error:", std_error))
+```
+``` {r}
+confidence_interval = result$conf.int
+print(paste("95% confidence interval: [", confidence_interval[1], ",", confidence_interval[2], "]"))
+```
+
+This suggests that the difference in marijuana use rates between the 27-year-old group and the 57-year-old group is statistically significant.
+
+```{r eval=FALSE}
+educ_shortlabel <- fct_recode(EDUCA, "never" = "Never attended school or only kindergarten",
+                    "elementary" = "Grades 1 through 8 (Elementary)", 
+                    "some hs" = "Grades 9 through 11 (Some high school)",
+                    "hs" = "Grade 12 or GED (High school graduate)",
+                    "some coll" = "College 1 year to 3 years (Some college or technical school)",
+                    "degree" = "College 4 years or more (College graduate)",
+                    "Refused" = "Refused")
+
+xtabs(~ use_marijan + educ_shortlabel)
+                         educ_shortlabel
+use_marijan never elementary some hs    hs some coll  degree  Refused
+          0    95       1472    2642 20004     22747   34993     257
+          1     8        104     587  3297      3555    3958      16
+
+```
+
+H0: There is no difference in marijuana use rates between high school graduates and college graduates.
+Ha: There is a significant difference in the rate of marijuana use between high school graduates and college graduates.
+
+```{r}
+users <- c(3297, 3958) # Number of marijuana users for high school graduates and college graduates
+totals <- c(20004 + 3297, 34993 + 3958) # Total individuals for high school graduates and college graduates
+```
+
+```{r}
+result <- prop.test(users, totals)
+print(result)
+```
+
+This indicates a significant difference in marijuana use rates between high school graduates and college graduates. High school graduates had significantly higher rates of use than college graduates.
+
+```{r}
+library(ggplot2)
+```
+```{r}
+age_groups <- c("21", "27", "32", "37", "42", "47", "52", "57", "62", "67", "72", "77", "82")
+usage_rates <- c(1311/(3737+1311), 990/(3117+990), 1098/(3675+1098), 1050/(4530+1050), 
+                 1073/(5069+1073), 828/(4949+828), 820/(6273+820), 936/(6960+936), 
+                 1111/(8520+1111), 1066/(9699+1066), 758/(9275+758), 311/(7154+311), 
+                 105/(7963+105))
+
+data <- data.frame(age_groups, usage_rates)
+
+ggplot(data, aes(x=age_groups, y=usage_rates)) +
+    geom_bar(stat="identity", fill="violet") +
+    theme_minimal() +
+    labs(x="Age Group", y="Marijuana Usage Rate", title="Marijuana Usage by Age")
+```
+
+The graph shows that cannabis use is higher among younger age groups and decreases progressively with age. This trend reflects the fact that younger people are more likely to experiment with or use marijuana on a regular basis, while older people are less likely to do so. This supports our previous statistical test that there are significant differences in marijuana use between different age groups. However, the graph may also reveal unanticipated localized fluctuations or outliers, which may point to other factors affecting marijuana use besides age.
+
+```{r}
+education_levels <- c("never", "elementary", "some hs", "hs", "some coll", "degree", "Refused")
+usage_rates <- c(8/(95+8), 104/(1472+104), 587/(2642+587), 3297/(20004+3297), 
+                 3555/(22747+3555), 3958/(34993+3958), 16/(257+16))
+
+data <- data.frame(education_levels, usage_rates)
+
+ggplot(data, aes(x=education_levels, y=usage_rates)) +
+    geom_bar(stat="identity", fill="purple") +
+    theme_minimal() +
+    labs(x="Education Level", y="Marijuana Usage Rate", title="Marijuana Usage by Education Level")
+```
+
+This graph reveals patterns in the distribution of marijuana use across education levels and may show that individuals at certain education levels are more inclined to use marijuana. At the same time, the graph also demonstrates that usage rates may be very close between some education levels, suggesting that education level may not be the only factor influencing marijuana use.
+
+```{r eval=FALSE}
+ACESWEAR_label <- fct_recode(df$ACESWEAR, 
+                             "never" = "Adverse Childhood Exper, never",
+                             "once" = "once",
+                             "more than once" = "more than once",
+                             "dont know not sure" = "dont know not sure",
+                             "refused" = "refused")
+xtabs(~ use_marijan + ACESWEAR_label)
+```
+
+This is subgroup data from Adverse Childhood Experiences, specifically whether a parent or adult in the home has ever cursed, insulted, or demeaned you. Previous research has shown that childhood experiences have a profound impact on behavior and mental health in adulthood, including substance use.
+
+H0: There is no significant difference in marijuana use rates between individuals who have experienced cursing, insulting, or belittling more than once and those who have not or only once.
+Ha: Individuals who experienced swearing, insulting, or belittling more than once had significantly higher rates of marijuana use than individuals who had no or only one experience.
+
+```{r}
+group_more_than_once <- brfss22[brfss22$ACESWEAR == "more than once",]
+group_other <- brfss22[brfss22$ACESWEAR != "more than once",]
+```
+
+```{r}
+users_more_than_once <- sum(group_more_than_once$use_marijan == 1, na.rm = TRUE)
+users_other <- sum(group_other$use_marijan == 1, na.rm = TRUE)
+
+total_more_than_once <- nrow(group_more_than_once)
+total_other <- nrow(group_other)
+```
+
+```{r}
+test_result <- prop.test(c(users_more_than_once, users_other),
+                         c(total_more_than_once, total_other))
+print(test_result)
+```
+
