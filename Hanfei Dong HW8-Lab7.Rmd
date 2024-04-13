@@ -1,0 +1,136 @@
+---
+title: "lab7"
+author: "Hanfei Dong"
+date: "2024-04-13"
+output: html_document
+---
+```{r}
+load("D:/psy StatMethod/Household_Pulse_data_ph4c2.RData")
+```
+
+```{r message=FALSE}
+require(plyr)
+require(dplyr)
+require(tidyverse)
+require(ggplot2)
+require(stargazer)
+```
+
+```{r}
+select1 <- (Household_Pulse_data$MHLTH_NEED != "NA")
+d_kids <- subset(Household_Pulse_data,select1)
+```
+
+```{r}
+d_kids$MentHealthKids <- as.numeric( 
+  (d_kids$MHLTH_NEED == "all children need mental health treatment") |
+  (d_kids$MHLTH_NEED == "some but not all children") )
+```
+
+```{r}
+ddply(d_kids,.(RRACE), summarize, avg = mean(MentHealthKids))
+```
+
+```{r results='asis'}
+ols_out1 <- lm(MentHealthKids ~ -1 + RRACE, data = d_kids)
+stargazer(ols_out1, type = "html")
+```
+
+```{r results='asis'}
+ols_out1a <- lm(MentHealthKids ~ RRACE, data = d_kids)
+stargazer(ols_out1a, type = "html")
+```
+
+```{r}
+p_avg_byrace <- ggplot(d_kids, aes(x = RRACE, fill = MHLTH_NEED))
+p_avg_byrace + geom_bar(position = "fill") + 
+  scale_fill_viridis_d(option = "mako", begin = 0.3, end = 0.85) 
+```
+
+```{r results='asis'}
+ols_out2 <- lm(MentHealthKids ~ RRACE + RHISPANIC, data = d_kids)
+stargazer(ols_out2, type = "html")
+ols_out2a <- lm(MentHealthKids ~ RRACE*RHISPANIC, data = d_kids)
+stargazer(ols_out2a, type = "html")
+anova(ols_out2,ols_out2a)
+```
+
+```{r}
+p_avg_byrace <- ggplot(d_kids, aes(x = RRACE, fill = MHLTH_NEED))
+p_avg_byrace + geom_bar(position = "fill") + 
+  scale_fill_viridis_d(option = "mako", begin = 0.3, end = 0.85) + 
+  facet_grid(~RHISPANIC)
+```
+
+```{r results='asis'}
+ols_out3 <- lm(MentHealthKids ~ RHISPANIC*RRACE*EEDUC*MS + PRIVHLTH, data = d_kids)
+stargazer(ols_out3, type = "html")
+```
+
+```{r}
+ols_out3a <- lm(MentHealthKids ~ RHISPANIC*RRACE*EEDUC + MS + PRIVHLTH, data = d_kids)
+```
+
+```{r}
+anova(ols_out2a,ols_out3a)
+```
+
+```{r results='asis'}
+ols_out4 <- lm(MentHealthKids ~ RHISPANIC*RRACE*EEDUC + MS + PRIVHLTH + 
+                REGION + ANXIOUS + WORRY + INTEREST + 
+                SOCIAL1 + SOCIAL2 + 
+                SUPPORT1 + SUPPORT2 + SUPPORT3 + SUPPORT4 + SUPPORT1EXP, data = d_kids)
+stargazer(ols_out3a,ols_out4, type = "html")
+```
+
+```{r results='asis'}
+logit_out1 <- glm(MentHealthKids ~ RHISPANIC*RRACE*EEDUC + MS + PRIVHLTH + 
+                REGION + ANXIOUS + WORRY + INTEREST + 
+                SOCIAL1 + SOCIAL2 + 
+                SUPPORT1 + SUPPORT2 + SUPPORT3 + SUPPORT4 + SUPPORT1EXP, data = d_kids,
+                family = binomial)
+
+stargazer(ols_out4,logit_out1, type = "html")
+```
+
+```{r}
+pred_vals <- predict(logit_out1, d_kids, type = "response")
+pred_model_logit1 <- (pred_vals > 0.18) 
+table(pred = pred_model_logit1, true = d_kids$MentHealthKids)
+```
+
+```{r}
+basic_ols <- lm(MentHealthKids ~ RRACE + RHISPANIC + EEDUC, data = d_kids)
+summary(basic_ols)
+```
+
+```{r}
+interaction_ols <- lm(MentHealthKids ~ RRACE*RHISPANIC*EEDUC, data = d_kids)
+summary(interaction_ols)
+```
+
+```{r}
+basic_logit <- glm(MentHealthKids ~ RRACE + RHISPANIC + EEDUC, data = d_kids, family = binomial)
+summary(basic_logit)
+```
+
+```{r}
+interaction_logit <- glm(MentHealthKids ~ RRACE*RHISPANIC*EEDUC, data = d_kids, family = binomial)
+summary(interaction_logit)
+```
+
+
+
+Topic: Correlation between LGBTQ individuals and adverse childhood experiences. As well as any interaction affect with substance misuse. 
+
+Schnarrs, P. W., Stone, A. L., Salcido, R., Jr., Baldwin, A., Georgiou, C., & Nemeroff, C. B. (2019). Differences in adverse childhood experiences (ACEs) and quality of physical and mental health between transgender and cisgender sexual minorities. Journal of Psychiatric Research, 119, 1–6.
+
+The paper focuses on the differences in adverse childhood experiences (ACEs) and their impact on physical and mental health among transgender and cisgender sexual minorities. 
+
+In the conclusions of the study, several key points are closely related to your research topic, which is the correlation between adverse childhood experiences (ACEs) in LGBTQ individuals and their interaction with substance misuse. 
+
+Association Between ACEs and Poor Mental Health: The study found that emotional neglect and emotional abuse were commonly reported, especially among transgender individuals, indicating that ACEs, particularly those involving emotional experiences, have a significant negative impact on mental health.
+
+Unique Experiences of Transgender Individuals: The study highlighted that transgender individuals reported ACEs more frequently during their childhood compared to gay, bisexual, or heterosexual individuals. This increased exposure to adverse experiences, likely due to increased rejection and discrimination during their upbringing, is associated with poorer mental health outcomes in adulthood.
+
+
