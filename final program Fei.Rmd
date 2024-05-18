@@ -8,16 +8,13 @@ output: html_document
 load("D:/psy StatMethod/BRFSS2022_rev.RData")
 ```
 
-
 ```{r}
 library(tidyverse) # for data manipulation and visualization
 library(dplyr)     # for data cleaning
-library(broom)     # to tidy up model outputs
-library(ggplot2)   # for data visualization
 ```
 
 ```{r}
-# After running this, all column names in data will have no spaces (they will be replaced with underscores) and will be in lowercase. This can make it easier to reference columns in subsequent analysis.
+# After running this, all column names` in data will have no spaces (they will be replaced with underscores) and will be in lowercase. This can make it easier to reference columns in subsequent analysis.
 brfss22 <- brfss22 %>%
   rename_with(~ gsub(" ", "_", .x, fixed = TRUE)) %>%
   rename_with(~ tolower(.x))
@@ -126,3 +123,69 @@ None of the remaining results were significant.
 
 Considering these results together, we can assume that adverse childhood experiences have some predictive power for smoking behavior. However, different childhood experiences may have different degrees of influence on an individual's smoking behavior, and not all ACE factors have a significant effect on smoking behavior, which requires a comprehensive consideration of an individual's background characteristics and other possible influencing factors.
 
+```{r}
+brfss22 <- brfss22 %>%
+  mutate(Age_midpt = case_when(
+    x_ageg5yr == "21" ~ "Age 18 to 24",
+    x_ageg5yr == "27" ~ "Age 25 to 29",
+    x_ageg5yr == "32" ~ "Age 30 to 34",
+    x_ageg5yr == "37" ~ "Age 35 to 39",
+    x_ageg5yr == "42" ~ "Age 40 to 44",
+    x_ageg5yr == "47" ~ "Age 45 to 49",
+    x_ageg5yr == "52" ~ "Age 50 to 54",
+    x_ageg5yr == "57" ~ "Age 55 to 59",
+    x_ageg5yr == "62" ~ "Age 60 to 64",
+    x_ageg5yr == "67" ~ "Age 65 to 69",
+    x_ageg5yr == "72" ~ "Age 70 to 74",
+    x_ageg5yr == "77" ~ "Age 75 to 79",
+    x_ageg5yr == "82" ~ "Age 80 or older",
+    
+  ))
+```
+
+```{r}
+brfss22 <- brfss22 %>%
+  mutate(ecignow2 = case_when(
+    ecignow2 %in% c("use every day", "use some days") ~ "yes",
+    ecignow2 %in% c("never used e-cigarettes in life") ~ "never",
+    ecignow2 == "not at all right now" ~ "quit",
+    TRUE ~ "no"
+  ))
+
+```
+
+```{r}
+brfss22$Age_midpt <- as.character(brfss22$Age_midpt)
+```
+
+```{r}
+# Group and calculate the number and proportion of people in each age group who use e-cigarettes
+ecig_age_counts <- ecig_age_counts %>%
+  mutate_at(vars(never, yes, quit), ~replace(., is.na(.), 0)) %>%
+  mutate(Total = never + yes + quit,
+         Proportion_Yes = ifelse(Total == 0, 0, yes / Total))
+```
+
+
+```{r}
+print(ecig_age_counts)
+```
+
+```{r}
+# Create binary variable for ECIGNOW2
+brfss22_ecig_binary <- brfss22 %>%
+  mutate(ecignow2_binary = case_when(
+    ecignow2 %in% c("use every day", "use some days") ~ TRUE,
+    TRUE ~ FALSE
+  ))
+
+# Combine ACE and ECIGNOW2 binary variables
+data <- data.frame(ecignow2 = brfss22_ecig_binary$ecignow2_binary, brfss22_ace_binary)
+
+# Logistic regression model
+model <- glm(ecignow2 ~ ., data = data, family = "binomial")
+
+summary(model)
+```
+#ECIGNOW2(current e-cigarettes use) & ACE/adverse childhood experiences
+The relationship between ECIGNOW2 (e-cigarette use) and ACE (Adverse Childhood Experiences) was assessed based on the results of logistic regression modeling. The results showed that no significant associations with e-cigarette use were observed for all factors involved in Adverse Childhood Experiences (ACE), including depression, mental illness, alcoholism, substance abuse, incarceration, parental separation, domestic violence, and sexual abuse by family members. All of the estimated coefficients had p-values above the significance level (α = 0.05), indicating that there was no significant relationship between these factors and e-cigarette use. Therefore, based on these modeling results, we did not find evidence to support an association between adverse childhood experiences and e-cigarette use.
