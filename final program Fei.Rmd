@@ -1,6 +1,6 @@
 ---
 title: '1'
-author: "Hanfei Dong"
+author: "Ariel Harewood, Angie Raymundo, Chamiqua Loswijk, Hanfei Dong, and Naumi Rasha"
 date: "2024-04-23"
 output: html_document
 ---
